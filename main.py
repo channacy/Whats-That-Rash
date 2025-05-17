@@ -1,9 +1,20 @@
 import streamlit as st
 import cv2
+import os
 import numpy as np
 from PIL import Image
 import requests
+from dotenv import load_dotenv
 
+load_dotenv()  
+from openai import OpenAI
+client = OpenAI(api_key=os.getenv("GPTKEY"))
+
+# response = client.responses.create(
+#     model="gpt-4.1",
+#     input="Write a one-sentence bedtime story about a unicorn."
+# )
+st.write(os.getenv("GPTKEY"))
 st.write("Streamlit is also great for more traditional ML use cases like computer vision or NLP. Here's an example of edge detection using OpenCV. 👁️") 
 
 uploaded_file = st.file_uploader("Upload an image", type=["jpg", "jpeg", "png"])

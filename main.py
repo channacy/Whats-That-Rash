@@ -10,10 +10,22 @@ load_dotenv()
 from openai import OpenAI
 client = OpenAI(api_key=os.getenv("GPTKEY"))
 
-# response = client.responses.create(
-#     model="gpt-4.1",
-#     input="Write a one-sentence bedtime story about a unicorn."
-# )
+response = client.responses.create(
+    model="gpt-4.1-mini",
+    input=[{
+        "role": "user",
+        "content": [
+            {"type": "input_text", "text": "what's in this image?"},
+            {
+                "type": "input_image",
+                "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/dd/Gfp-wisconsin-madison-the-nature-boardwalk.jpg/2560px-Gfp-wisconsin-madison-the-nature-boardwalk.jpg",
+            },
+        ],
+    }],
+)
+
+print(response.output_text)
+
 st.write(os.getenv("GPTKEY"))
 st.write("Streamlit is also great for more traditional ML use cases like computer vision or NLP. Here's an example of edge detection using OpenCV. 👁️") 
 

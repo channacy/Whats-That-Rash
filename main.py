@@ -14,7 +14,7 @@ client = OpenAI(api_key=os.getenv("GPTKEY"))
 
 with stylable_container(
 key="wrapper_container",
-# 'button' below in css_styles is the element you will be customizing.
+# wrapper style.
 css_styles="""
     { 
         background-color: #BFE7F9;
@@ -24,9 +24,10 @@ css_styles="""
     }
     """,
 ):
-    
+    # Header for website
     st.title("WHAT\'S THAT RASH?")
-    st.write("Concerned? Let's find out what is that rash") 
+    st.write("Concerned? Let's find out what is that rash is ") 
+    # Tag selection for rash description
     descList = st.multiselect("What is your rash like?", ["Bumpy", "Rough", "Dry", "Scaly", "Flaky", "Crusty", "Scabbed",
         "Red", "White", "Darkened", "Discolored", "Bruised",
         "Clustered", "Spread", "Localized",
@@ -36,12 +37,15 @@ css_styles="""
     def encode_image(image):
         return base64.b64encode(image.read()).decode("utf-8")
 
+    # Get a image from user
     skinCondition = st.file_uploader("Upload a Picture of Your Skin Condition", type=["jpg", "jpeg", "png"])
-
+    
+    # GPT Integration
     if skinCondition:
         st.image(skinCondition, caption = "Uploaded image", use_container_width =True)
         base64_image = encode_image(skinCondition)
         
+        # only include list of description into prompt if user provided any
         if len(descList) > 0:
             desc = ','.join(descList)
             response = client.chat.completions.create(
@@ -50,6 +54,7 @@ css_styles="""
                     {
                         "role": "user", 
                         "content": [
+                            # Instructions for AI
                             { "type": "text", "text": "You are a dermatologist that assesses skin conditions" },
                             { "type": "text", "text": "Within 1000 characters with the title being WTR Report, analyse the image and create a report to highlight what condition it most likely is, and in bullet points, provide medical recommendations. Make sure the average user will be able to understand the report." },
                             { "type": "text", "text": desc },
@@ -65,7 +70,7 @@ css_styles="""
                 ],
                 temperature = 0.0
             )
-        else:
+        else: # no user description given
             response = client.chat.completions.create(
                 model = "gpt-4.1",
                 messages = [
@@ -86,12 +91,14 @@ css_styles="""
                 ],
                 temperature = 0.0
             )
-            
-        st.markdown(response.choices[0].message.content + "<p></p>")
+        
+        # prints as a markdown
+        st.markdown(response.choices[0].message.content)
 
         with st.container(border=True):
             st.write("Send email with uploaded image and suggested diagnosis as saved PDF.") 
             if st.button(label="Generate Report"):
+                # converts st.fileUploader to image
                 image = Image.open(skinCondition).convert("RGB")
                 pdf_bytes = io.BytesIO()
                 image.save(pdf_bytes, format="PDF")
@@ -107,4 +114,5 @@ css_styles="""
             st.link_button("Send Gmail", url="https://mail.google.com/mail/?view=cm&fs=1&to=&su=Concerns%20About%20My%20Health&body=Please%20find%20the%20PDF%20document%20attached.%0A%0A%28You%20can%20manually%20attach%20the%20PDF%29%0A%0ABest%20Regards,")
 
 
+# Disclaimer
 st.text("Any content available via this website is for general informational purposes only and is not intended to be, and should not be treated as, substitute for professional medical advice, diagnosis or treatment. The content is provided on the understanding that no surgical or medical advice or recommendation is being rendered to you via the website. Medical treatment has to be individualised and can only be rendered after adequate assessment of your condition through appropriate clinical examination. Please do not disregard the professional medical advice of your physician or local healthcare provider or delay in seeking medical advice from them because of any information provided on the website. ")

@@ -12,42 +12,24 @@ client = OpenAI(api_key=os.getenv("GPTKEY"))
 st.title("WHAT\'S THAT RASH?")
 st.write("Concerned? Let's find out what is that rash") 
 
-descList = st.multiselect("What is your rash like?", ["bumpy","rough", "dry", "red","white","clustered", "scaly", "blister", "crusty", "painful", "itchy", "warm", "tender", "hot","flaky", "scabbed", "burning", "tingly" ],None)
+descList = st.multiselect("What is your rash like?", ["Bumpy", "Rough", "Dry", "Scaly", "Flaky", "Crusty", "Scabbed",
+    "Red", "White", "Darkened", "Discolored", "Bruised",
+    "Clustered", "Spread", "Localized",
+    "Blistered", "Oozing", "Swollen", "Raised", "Indented",
+    "Painful", "Itchy", "Burning", "Tingling", "Tender", "Warm", "Hot", "Numb"], None)
+
 st.write(descList)
+desc = ','.join(descList)
+st.write("Your patient describes the rash to be " + desc)
 
 def encode_image(image):
     return base64.b64encode(image.read()).decode("utf-8")
 
 skinCondition = st.file_uploader("Upload a Picture of Your Skin Condition", type=["jpg", "jpeg", "png"])
 
-if skinCondition:
-    desc = ','.join(descList)
-    st.image(skinCondition, caption = "Uploaded image", use_container_width =True)
-    base64_image = encode_image(skinCondition)
-    if len(descList) > 0:
-        response = client.chat.completions.create(
-            model="gpt-4.1",
-            messages=[
-                {
-                    "role": "user", 
-                    "content": [
-                            { "type": "text", "text": "You are a dermatologist that assesses skin conditions" },
-                            { "type": "text", "text": "Within 500 characters, could you identify the image and create a report to highlight important details of the skin condition, what condition it most likely is, and in bullet points, provide medical recommendations. Make it simple for the average consumer to understand." },
-                            { "type": "text", "text": desc },
-                            {
-                                "type": "image_url",
-                                "image_url": {
-                                    "url": f"data:image/jpeg;base64,{base64_image}",
-                                    "detail": "low"
-                                },     
-                            },
-                    ]
-                }
-            ],
-            temperature = 0.0
-        )
-    else:
-        st.image(skinCondition, caption = "Uploaded image", use_container_width =True)
+def api_call(skinCondition):
+    if skinCondition:
+        st.image(skinCondition, caption = "Uploaded image", use_container_width = True)
         base64_image = encode_image(skinCondition)
         if len(descList) > 0:
             response = client.chat.completions.create(
@@ -57,7 +39,8 @@ if skinCondition:
                         "role": "user", 
                         "content": [
                             { "type": "text", "text": "You are a dermatologist that assesses skin conditions" },
-                            { "type": "text", "text": "Within 500 characters, could you identify the image and create a report to highlight important details of the skin condition, what condition it most likely is, and in bullet points, provide medical recommendations. Make it simple for the average consumer to understand." },
+                            { "type": "text", "text": "Within 1000 characters, identify the image and create a report to highlight details of the skin condition based on your analysis, what condition it most likely is, and in bullet points, provide medical recommendations. Make sure the average user will be able to understand the report." },
+                            { "type": "text", "text": desc },
                             {
                                 "type": "image_url",
                                 "image_url": {
@@ -70,8 +53,32 @@ if skinCondition:
                 ],
                 temperature = 0.0
             )
-        
-    st.markdown(response.choices[0].message.content)
+        else:
+            st.image(skinCondition, caption = "Uploaded image", use_container_width =True)
+            base64_image = encode_image(skinCondition)
+            if len(descList) > 0:
+                response = client.chat.completions.create(
+                    model="gpt-4.1",
+                    messages=[
+                        {
+                            "role": "user", 
+                            "content": [
+                                { "type": "text", "text": "You are a dermatologist that assesses skin conditions" },
+                                { "type": "text", "text": "Could you describe the image and create a report to highlight important details of the skin condition, and provide medical recommendations. Create a report with observations, important details and recommendations with bullet points." },
+                                {
+                                    "type": "image_url",
+                                    "image_url": {
+                                        "url": f"data:image/jpeg;base64,{base64_image}",
+                                        "detail": "low"
+                                    },     
+                                },
+                            ]
+                        }
+                    ],
+                    temperature = 0.0
+                )
+            
+        st.markdown(response.choices[0].message.content)
 
     with st.container(border=True):
         st.write("Send email with uploaded image and suggested diagnosis as saved PDF.") 

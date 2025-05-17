@@ -2,6 +2,8 @@ import streamlit as st
 import os
 from dotenv import load_dotenv
 from openai import OpenAI
+from PIL import Image
+import io
 import io
 import base64
 from streamlit_extras.stylable_container import stylable_container
@@ -25,7 +27,12 @@ css_styles="""
     
     st.title("WHAT\'S THAT RASH?")
     st.write("Concerned? Let's find out what is that rash") 
-    descList = st.multiselect("What is your rash like?", ["bumpy","rough", "dry", "red","white","clustered", "scaly", "blister", "crusty", "painful", "itchy", "warm", "tender", "hot","flaky", "scabbed", "burning", "tingly" ],None)
+    descList = st.multiselect("What is your rash like?", ["Bumpy", "Rough", "Dry", "Scaly", "Flaky", "Crusty", "Scabbed",
+        "Red", "White", "Darkened", "Discolored", "Bruised",
+        "Clustered", "Spread", "Localized",
+        "Blistered", "Oozing", "Swollen", "Raised", "Indented",
+        "Painful", "Itchy", "Burning", "Tingling", "Tender", "Warm", "Hot", "Numb"], None)
+    
     def encode_image(image):
         return base64.b64encode(image.read()).decode("utf-8")
 
@@ -43,16 +50,16 @@ css_styles="""
                     {
                         "role": "user", 
                         "content": [
-                                { "type": "text", "text": "You are a dermatologist that assesses skin conditions" },
-                                { "type": "text", "text": "Within 500 characters, could you identify the image and create a report to highlight important details of the skin condition, what condition it most likely is, and in bullet points, provide medical recommendations. Make it simple for the average consumer to understand." },
-                                { "type": "text", "text": desc },
-                                {
-                                    "type": "image_url",
-                                    "image_url": {
-                                        "url": f"data:image/jpeg;base64,{base64_image}",
-                                        "detail": "low"
-                                    },     
-                                },
+                            { "type": "text", "text": "You are a dermatologist that assesses skin conditions" },
+                            { "type": "text", "text": "Within 1000 characters with the title being WTR Report, analyse the image and create a report to highlight what condition it most likely is, and in bullet points, provide medical recommendations. Make sure the average user will be able to understand the report." },
+                            { "type": "text", "text": desc },
+                            {
+                                "type": "image_url",
+                                "image_url": {
+                                    "url": f"data:image/jpeg;base64,{base64_image}",
+                                    "detail": "low"
+                                },     
+                            },
                         ]
                     }
                 ],
@@ -60,13 +67,13 @@ css_styles="""
             )
         else:
             response = client.chat.completions.create(
-                model="gpt-4.1",
-                messages=[
+                model = "gpt-4.1",
+                messages = [
                     {
                         "role": "user", 
                         "content": [
                             { "type": "text", "text": "You are a dermatologist that assesses skin conditions" },
-                            { "type": "text", "text": "Within 500 characters, could you identify the image and create a report to highlight important details of the skin condition, what condition it most likely is, and in bullet points, provide medical recommendations. Make it simple for the average consumer to understand." },
+                            { "type": "text", "text": "Within 1000 characters with the title being WTR Report, analyse the image and create a report to highlight what condition it most likely is, and in bullet points, provide medical recommendations. Make sure the average user will be able to understand the report." },
                             {
                                 "type": "image_url",
                                 "image_url": {
@@ -85,7 +92,7 @@ css_styles="""
         with st.container(border=True):
             st.write("Send email with uploaded image and suggested diagnosis as saved PDF.") 
             if st.button(label="Generate Report"):
-                image = image.convert("RGB")
+                image = Image.open(skinCondition).convert("RGB")
                 pdf_bytes = io.BytesIO()
                 image.save(pdf_bytes, format="PDF")
                 pdf_bytes.seek(0)
@@ -98,3 +105,4 @@ css_styles="""
                 )
 
             st.link_button("Send Gmail", url="https://mail.google.com/mail/?view=cm&fs=1&to=&su=Concerns%20About%20My%20Health&body=Please%20find%20the%20PDF%20document%20attached.%0A%0A%28You%20can%20manually%20attach%20the%20PDF%29%0A%0ABest%20Regards,")
+

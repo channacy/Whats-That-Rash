@@ -14,8 +14,6 @@ st.write("Concerned? Let's find out what is that rash")
 
 descList = st.multiselect("What is your rash like?", ["bumpy","rough", "dry", "red","white","clustered", "scaly", "blister", "crusty", "painful", "itchy", "warm", "tender", "hot","flaky", "scabbed", "burning", "tingly" ],None)
 st.write(descList)
-desc = ','.join(descList)
-st.write("Your patient describes the rash to be " + desc)
 
 def encode_image(image):
     return base64.b64encode(image.read()).decode("utf-8")
@@ -23,6 +21,7 @@ def encode_image(image):
 skinCondition = st.file_uploader("Upload a Picture of Your Skin Condition", type=["jpg", "jpeg", "png"])
 
 if skinCondition:
+    desc = ','.join(descList)
     st.image(skinCondition, caption = "Uploaded image", use_container_width =True)
     base64_image = encode_image(skinCondition)
     if len(descList) > 0:
@@ -32,16 +31,16 @@ if skinCondition:
                 {
                     "role": "user", 
                     "content": [
-                        { "type": "text", "text": "You are a dermatologist that assesses skin conditions" },
-                        { "type": "text", "text": "Could you describe the image and create a report to highlight important details of the skin condition, and provide medical recommendations. Create a report with observations, important details and recommendations with bullet points." },
-                        { "type": "text", "text": "You are a dermatologist that assesses skin conditions" },
-                        {
-                            "type": "image_url",
-                            "image_url": {
-                                "url": f"data:image/jpeg;base64,{base64_image}",
-                                "detail": "low"
-                            },     
-                        },
+                            { "type": "text", "text": "You are a dermatologist that assesses skin conditions" },
+                            { "type": "text", "text": "Within 500 characters, could you identify the image and create a report to highlight important details of the skin condition, what condition it most likely is, and in bullet points, provide medical recommendations. Make it simple for the average consumer to understand." },
+                            { "type": "text", "text": desc },
+                            {
+                                "type": "image_url",
+                                "image_url": {
+                                    "url": f"data:image/jpeg;base64,{base64_image}",
+                                    "detail": "low"
+                                },     
+                            },
                     ]
                 }
             ],
@@ -58,8 +57,7 @@ if skinCondition:
                         "role": "user", 
                         "content": [
                             { "type": "text", "text": "You are a dermatologist that assesses skin conditions" },
-                            { "type": "text", "text": "Could you describe the image and create a report to highlight important details of the skin condition, and provide medical recommendations. Create a report with observations, important details and recommendations with bullet points." },
-                            { "type": "text", "text": "You are a dermatologist that assesses skin conditions" },
+                            { "type": "text", "text": "Within 500 characters, could you identify the image and create a report to highlight important details of the skin condition, what condition it most likely is, and in bullet points, provide medical recommendations. Make it simple for the average consumer to understand." },
                             {
                                 "type": "image_url",
                                 "image_url": {

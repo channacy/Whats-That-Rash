@@ -12,7 +12,7 @@ load_dotenv()
 client = OpenAI(api_key=os.getenv("GPTKEY"))
 
 st.title("WHAT\'S THAT RASH?")
-st.write("Concerned? Let's find out what that rash") 
+st.write("Concerned? Let's find out what that rash is") 
 
 descList = st.multiselect("What is your rash like?", ["Bumpy", "Rough", "Dry", "Scaly", "Flaky", "Crusty", "Scabbed",
     "Red", "White", "Darkened", "Discolored", "Bruised",

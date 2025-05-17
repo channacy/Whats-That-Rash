@@ -1,6 +1,6 @@
-# What's The Rash?
+# What's That Rash?
 
-We have developed an AI web app, "What's The Rash?" to help patients with skin conditions find put more about their skin condition with just a picture.
+We have developed an AI web app, "What's That Rash?" to help patients with skin conditions find out more about their skin condition with just a picture.
 
 # Features
 

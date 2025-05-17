@@ -87,7 +87,7 @@ css_styles="""
                 temperature = 0.0
             )
             
-        st.markdown(response.choices[0].message.content)
+        st.markdown(response.choices[0].message.content + "<p></p>")
 
         with st.container(border=True):
             st.write("Send email with uploaded image and suggested diagnosis as saved PDF.") 
@@ -106,3 +106,5 @@ css_styles="""
 
             st.link_button("Send Gmail", url="https://mail.google.com/mail/?view=cm&fs=1&to=&su=Concerns%20About%20My%20Health&body=Please%20find%20the%20PDF%20document%20attached.%0A%0A%28You%20can%20manually%20attach%20the%20PDF%29%0A%0ABest%20Regards,")
 
+
+st.text("Any content available via this website is for general informational purposes only and is not intended to be, and should not be treated as, substitute for professional medical advice, diagnosis or treatment. The content is provided on the understanding that no surgical or medical advice or recommendation is being rendered to you via the website. Medical treatment has to be individualised and can only be rendered after adequate assessment of your condition through appropriate clinical examination. Please do not disregard the professional medical advice of your physician or local healthcare provider or delay in seeking medical advice from them because of any information provided on the website. ")

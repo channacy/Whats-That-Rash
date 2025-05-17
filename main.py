@@ -10,22 +10,21 @@ load_dotenv()
 
 client = OpenAI(api_key=os.getenv("GPTKEY"))
 
-st.title("WHAT\'S THAT RASH?")
-st.write("Concerned? Let's find out what is that rash") 
-
 with stylable_container(
-key="test_button",
+key="wrapper_container",
 # 'button' below in css_styles is the element you will be customizing.
 css_styles="""
     { 
         background-color: #BFE7F9;
-        border: none;
-        color: white;
+        border: rounded;
         border-radius: 25px;
         padding: 35px;
     }
     """,
 ):
+    
+    st.title("WHAT\'S THAT RASH?")
+    st.write("Concerned? Let's find out what is that rash") 
     descList = st.multiselect("What is your rash like?", ["bumpy","rough", "dry", "red","white","clustered", "scaly", "blister", "crusty", "painful", "itchy", "warm", "tender", "hot","flaky", "scabbed", "burning", "tingly" ],None)
     def encode_image(image):
         return base64.b64encode(image.read()).decode("utf-8")

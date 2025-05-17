@@ -2,6 +2,8 @@ import streamlit as st
 import os
 from dotenv import load_dotenv
 from openai import OpenAI
+from PIL import Image
+import io
 import io
 import base64
 
@@ -82,7 +84,7 @@ if skinCondition:
 with st.container(border=True):
     st.write("Send email with uploaded image and suggested diagnosis as saved PDF.") 
     if st.button(label="Generate Report"):
-        image = image.convert("RGB")
+        image = Image.open(skinCondition).convert("RGB")
         pdf_bytes = io.BytesIO()
         image.save(pdf_bytes, format="PDF")
         pdf_bytes.seek(0)

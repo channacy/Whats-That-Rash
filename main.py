@@ -80,16 +80,17 @@ with stylable_container(
     key="wrapper_container",
     css_styles="""
         { 
-            background-color: #BFE7F9;
+            background-color: #A8DADC;
             border: rounded;
             border-radius: 25px;
-            padding: 35px;
+            padding: 20px;
         }
     """,
 ):
     # Header for website
-    st.title("WHAT'S THAT RASH?")
-    st.write("Concerned? Let's find out what is that rash is")
+    st.logo("images/logo.png", size ="large")
+    st.title("What's That Rash?", anchor=False)
+    st.write("Concerned? Let's find out what that rash is")
 
     # Tag selection for rash description
     descList = st.multiselect(
@@ -104,10 +105,8 @@ with stylable_container(
         None,
     )
 
-
 def encode_image(image):
     return base64.b64encode(image.read()).decode("utf-8")
-
 
 # Get an image from user
 skinCondition = st.file_uploader("Upload a Picture of Your Skin Condition", type=["jpg", "jpeg", "png"])
@@ -126,7 +125,7 @@ if skinCondition:
                 {
                     "role": "user",
                     "content": [
-                        {"type": "text", "text": "You are a dermatologist that assesses skin conditions"},
+                        {"type": "text", "text": "You are a dermatologist that assesses skin conditions, including inflammatory, autoimmune and connective tissue, neoplastic, pigmentary, infectious, genetic and congenital, drug-induced and trauma and scarring disorders."},
                         {
                             "type": "text",
                             "text": (
@@ -155,7 +154,7 @@ if skinCondition:
                 {
                     "role": "user",
                     "content": [
-                        {"type": "text", "text": "You are a dermatologist that assesses skin conditions"},
+                        {"type": "text", "text": "You are a dermatologist that assesses skin conditions, including inflammatory, autoimmune and connective tissue, neoplastic, pigmentary, infectious, genetic and congenital, drug-induced and trauma and scarring disorders."},
                         {
                             "type": "text",
                             "text": (
@@ -184,7 +183,7 @@ if skinCondition:
 with st.container():
     st.write("Download report with uploaded image and suggested diagnosis as saved PDF.")
 
-    if st.button(label="Generate Report") and skinCondition:
+    if st.button(label="Generate Report", type="primary", icon="📄") and skinCondition:
         try:
             image = Image.open(skinCondition).convert("RGB")
 
@@ -229,8 +228,10 @@ with st.container():
             # Download button
             st.download_button(
                 label="Download",
-                data=pdf_bytes,
-                file_name="report.pdf",
+                type="primary",
+                icon="💾",
+                data=pdf_bytes, 
+                file_name="WTR Report.pdf",
                 mime="application/pdf",
             )
 
@@ -239,11 +240,11 @@ with st.container():
 
     st.link_button(
         "Send Gmail",
+        type="primary",
+        icon="📩",
         url="https://mail.google.com/mail/?view=cm&fs=1&to=&su=Concerns%20About%20My%20Health&body=Please%20find%20the%20PDF%20document%20attached.%0A%0A%28You%20can%20manually%20attach%20the%20PDF%29%0A%0ABest%20Regards,",
     )
 
 # Disclaimer
 st.markdown("**Disclaimer**")
-st.text(
-    "Any content available via this website is for general informational purposes only and is not intended to be, and should not be treated as, substitute for professional medical advice, diagnosis or treatment. The content is provided on the understanding that no surgical or medical advice or recommendation is being rendered to you via the website. Medical treatment has to be individualised and can only be rendered after adequate assessment of your condition through appropriate clinical examination. Please do not disregard the professional medical advice of your physician or local healthcare provider or delay in seeking medical advice from them because of any information provided on the website."
-)
+st.markdown('<div style="text-align: justify;">The content provided on this platform is for informational and educational purposes only and is not intended as a substitute for professional medical advice, diagnosis, or treatment. Always seek the advice of your physician or other qualified health provider with any questions you may have regarding a medical condition. Never disregard professional medical advice or delay in seeking it because of something you have read here. If you think you may have a medical emergency, call your doctor or emergency services immediately. Reliance on any information provided by this platform is solely at your own risk.</div>', unsafe_allow_html=True)

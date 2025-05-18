@@ -20,14 +20,13 @@ client = OpenAI(api_key=os.getenv("GPTKEY"))
 # Set Page's Title and Icon
 st.set_page_config(page_title="Skincare recommendation", page_icon="images/logo.png")
 
-# Functions
+# Function to render markdown to PDF
 def render_markdown_to_pdf(c, text, x, y, max_width=450, line_height=16):
     """Render markdown (**bold**) text into PDF with proper word wrapping and styling."""
     text_obj = c.beginText()
     text_obj.setTextOrigin(x, y)
     text_obj.setFont("Helvetica", 12)
 
-    # Split text into parts (plain and **bold** chunks)
     parts = re.split(r'(\*\*.*?\*\*)', text)
 
     lines = []
@@ -64,7 +63,6 @@ def render_markdown_to_pdf(c, text, x, y, max_width=450, line_height=16):
     if current_line:
         lines.append(current_line)
 
-    # Draw each line
     for line in lines:
         for word, font in line:
             text_obj.setFont(font, 12)
@@ -72,102 +70,82 @@ def render_markdown_to_pdf(c, text, x, y, max_width=450, line_height=16):
         text_obj.textLine("")
 
     c.drawText(text_obj)
-    return y - line_height * len(lines)  # return new y position
+    return y - line_height * len(lines)
 
-# initialize session state
+# Initialize session state
 if 'submitted' not in st.session_state:
     st.session_state.submitted = False
 if 'response' not in st.session_state:
     st.session_state.response = None
+
 # Main UI container
 with stylable_container(
     key="wrapper_container",
     css_styles="""
         { 
-            background-color: #BFE7F9;
+            background-color: #A8DADC;
             border: rounded;
             border-radius: 25px;
-            padding: 35px;
+            padding: 20px;
         }
     """,
 ):
-    # Header for website
-    st.title("Skincare recommendation")
-    st.write("Find the right routine for you")
+    st.logo("images/logo.png", size="large")
+    st.title("Skincare Routine Recommendation", anchor=False)
+    st.write("Find the right routine for you!")
 
-    # Tag selection for rash description
     skintype = st.selectbox(
         "What is your skin type?",
-        [
-            "normal", "dry", "oily", "combination"
-        ],
+        ["Normal", "Dry", "Oily", "Combination"]
     )
-    concernList = st.multiselect("What are your concerns?", ["acne", "dry skin", "blemish scars", "wrinkles", "black heads", "oily skin", "acne scar"])
 
-    response = None
-    # GPT Integration
-    if st.button("Submit"):
+    concernList = st.multiselect(
+        "What are your concerns?",
+        ["Acne", "Dry Skin", "Blemish Scars", "Wrinkles", "Black Heads", "Oily Skin", "Acne Scar"]
+    )
+
+    if st.button(label="Submit", type="primary",icon="✅"):
         st.session_state.submitted = True
-        # Only include description list in prompt if user provided any
-        if concernList and len(concernList) > 0:
-            concerns = ','.join(concernList)
-            st.session_state.response = client.chat.completions.create(
-                model="gpt-4.1",
-                messages=[
-                    {
-                        "role": "user",
-                        "content": [
-                            {"type": "text", "text": "Given someone with " + skintype + "skin who wants to primarily fix " + concerns +
-                            ". Within 1000 characters with the title being Skincare Routine, "
-                                "provide recommendations for a routine and products in bullet points. "
-                                "Make sure the average user will be able to understand the report."},
-                        ],
-                    }
-                ],
-                temperature=0.0,
-            )
-        else:  # no user description given
-            st.session_state.response = client.chat.completions.create(
-                model="gpt-4.1",
-                messages=[
-                    {
-                        "role": "user",
-                        "content": [
-                            {"type": "text", "text": "Given someone with " + skintype + "skin." +
-                            "Within 1000 characters with the title being Skincare Routine, "
-                                "provide recommendations for a routine and products in bullet points. "
-                                "Make sure the average user will be able to understand the report."},
-                        ],
-                    }
-                ],
-                temperature=0.0,
-            )
+        if concernList:
+            concerns = ', '.join(concernList)
+            prompt = f"Given someone with {skintype} skin who wants to primarily fix {concerns}. " \
+                     f"Within 1000 characters with the title being Skincare Routine, " \
+                     f"provide recommendations for a routine and products in bullet points. " \
+                     f"Make sure the average user will be able to understand the report."
+        else:
+            prompt = f"Given someone with {skintype} skin. " \
+                     f"Within 1000 characters with the title being Skincare Routine, " \
+                     f"provide recommendations for a routine and products in bullet points. " \
+                     f"Make sure the average user will be able to understand the report."
 
+        st.session_state.response = client.chat.completions.create(
+            model="gpt-4.1",
+            messages=[{"role": "user", "content": [{"type": "text", "text": prompt}]}],
+            temperature=0.0,
+        )
+
+# Display response and download option
 if st.session_state.submitted:
-    # Prints as markdown
     st.markdown(st.session_state.response.choices[0].message.content)
 
-    # Container with options to download and send report
     with st.container():
         st.write("Download routine as saved PDF.")
 
-        if st.button(label="Generate Report"):
+        if st.button(label="Generate Report", type="primary", icon="📄"):
             try:
                 pdf_bytes = io.BytesIO()
                 c = canvas.Canvas(pdf_bytes, pagesize=letter)
 
-                # Title
                 c.setFont("Helvetica-Bold", 16)
                 c.drawString(50, 770, "Skincare Routine")
 
-                # Self-described symptoms
+                c.setFont("Helvetica", 12)
                 c.drawString(50, 750, "Concerns:")
                 y = 720
                 for sym in concernList:
                     c.drawString(60, y, f"- {sym}")
-                    y -= 15  # space between lines
+                    y -= 15
 
-                # Suggested Diagnosis Section
                 c.drawString(50, y - 20, "Suggested Routine:")
                 y -= 40
 
@@ -175,17 +153,15 @@ if st.session_state.submitted:
                 for paragraph in response_text:
                     if paragraph.strip():
                         y = render_markdown_to_pdf(c, paragraph.strip(), 60, y, max_width=480)
-                        y -= 10  # spacing between paragraphs
+                        y -= 10
                         if y < 60:
                             c.showPage()
                             y = 750
 
-                # Save PDF
                 c.save()
                 pdf_bytes.seek(0)
                 st.success("PDF generated successfully!")
 
-                # Download button
                 st.download_button(
                     label="Download",
                     data=pdf_bytes,
@@ -198,6 +174,13 @@ if st.session_state.submitted:
 
 # Disclaimer
 st.markdown("**Disclaimer**")
-st.text(
-    "Any content available via this website is for general informational purposes only and is not intended to be, and should not be treated as, substitute for professional medical advice, diagnosis or treatment. The content is provided on the understanding that no surgical or medical advice or recommendation is being rendered to you via the website. Medical treatment has to be individualised and can only be rendered after adequate assessment of your condition through appropriate clinical examination. Please do not disregard the professional medical advice of your physician or local healthcare provider or delay in seeking medical advice from them because of any information provided on the website."
+st.markdown(
+    '<div style="text-align: justify;">'
+    'The content provided on this platform is for informational and educational purposes only and is not intended as a substitute for professional medical advice, diagnosis, or treatment. '
+    'Always seek the advice of your physician or other qualified health provider with any questions you may have regarding a medical condition. '
+    'Never disregard professional medical advice or delay in seeking it because of something you have read here. '
+    'If you think you may have a medical emergency, call your doctor or emergency services immediately. '
+    'Reliance on any information provided by this platform is solely at your own risk.'
+    '</div>',
+    unsafe_allow_html=True
 )

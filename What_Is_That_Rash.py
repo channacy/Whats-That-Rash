@@ -20,14 +20,12 @@ client = OpenAI(api_key=os.getenv("GPTKEY"))
 # Set Page's Title and Icon
 st.set_page_config(page_title="What's That Rash?", page_icon="images/logo.png")
 
-# Functions
+# Helper Functions
 def render_markdown_to_pdf(c, text, x, y, max_width=450, line_height=16):
-    """Render markdown (**bold**) text into PDF with proper word wrapping and styling."""
     text_obj = c.beginText()
     text_obj.setTextOrigin(x, y)
     text_obj.setFont("Helvetica", 12)
 
-    # Split text into parts (plain and **bold** chunks)
     parts = re.split(r'(\*\*.*?\*\*)', text)
 
     lines = []
@@ -49,7 +47,7 @@ def render_markdown_to_pdf(c, text, x, y, max_width=450, line_height=16):
             if word:
                 words_with_fonts.append((word, font))
             if i < len(words) - 1:
-                words_with_fonts.append((" ", font))  # add space between words
+                words_with_fonts.append((" ", font))
 
     for word, font in words_with_fonts:
         width = stringWidth(word, font, 12)
@@ -64,7 +62,6 @@ def render_markdown_to_pdf(c, text, x, y, max_width=450, line_height=16):
     if current_line:
         lines.append(current_line)
 
-    # Draw each line
     for line in lines:
         for word, font in line:
             text_obj.setFont(font, 12)
@@ -72,14 +69,18 @@ def render_markdown_to_pdf(c, text, x, y, max_width=450, line_height=16):
         text_obj.textLine("")
 
     c.drawText(text_obj)
-    return y - line_height * len(lines)  # return new y position
+    return y - line_height * len(lines)
+
+
+def encode_image(image):
+    return base64.b64encode(image.read()).decode("utf-8")
 
 
 # Main UI container
 with stylable_container(
     key="wrapper_container",
     css_styles="""
-        { 
+        {
             background-color: #A8DADC;
             border: rounded;
             border-radius: 25px;
@@ -89,12 +90,10 @@ with stylable_container(
 ):
     st.sidebar.success("Select a page below")
 
-    # Header for website
-    st.logo("images/logo.png", size ="large")
+    st.logo("images/logo.png", size="large")
     st.title("What's That Rash?", anchor=False)
     st.write("Concerned? Let's find out what that rash is")
 
-    # Tag selection for rash description
     descList = st.multiselect(
         "What is your rash like?",
         [
@@ -107,10 +106,7 @@ with stylable_container(
         None,
     )
 
-def encode_image(image):
-    return base64.b64encode(image.read()).decode("utf-8")
-
-# Get an image from user
+# Upload Image
 skinCondition = st.file_uploader("Upload a Picture of Your Skin Condition", type=["jpg", "jpeg", "png"])
 
 # GPT Integration
@@ -118,98 +114,66 @@ if skinCondition:
     st.image(skinCondition, caption="Uploaded image", use_container_width=True)
     base64_image = encode_image(skinCondition)
 
-    # Only include description list in prompt if user provided any
-    if descList and len(descList) > 0:
-        desc = ','.join(descList)
-        response = client.chat.completions.create(
-            model="gpt-4.1",
-            messages=[
+    common_prompt = [
+        {
+            "role": "user",
+            "content": [
+                {"type": "text", "text": "You are a dermatologist that assesses skin conditions, including inflammatory, autoimmune and connective tissue, neoplastic, pigmentary, infectious, genetic and congenital, drug-induced and trauma and scarring disorders."},
                 {
-                    "role": "user",
-                    "content": [
-                        {"type": "text", "text": "You are a dermatologist that assesses skin conditions, including inflammatory, autoimmune and connective tissue, neoplastic, pigmentary, infectious, genetic and congenital, drug-induced and trauma and scarring disorders."},
-                        {
-                            "type": "text",
-                            "text": (
-                                "Within 1000 characters with the title being WTR Report, analyse the image and "
-                                "create a report to highlight what condition it most likely is, and in bullet points, "
-                                "provide medical recommendations. Make sure the average user will be able to understand the report."
-                            ),
-                        },
-                        {"type": "text", "text": desc},
-                        {
-                            "type": "image_url",
-                            "image_url": {
-                                "url": f"data:image/jpeg;base64,{base64_image}",
-                                "detail": "low",
-                            },
-                        },
-                    ],
+                    "type": "text",
+                    "text": (
+                        "Within 1000 characters with the title being WTR Report, analyse the image and "
+                        "create a report to highlight what condition it most likely is, and in bullet points, "
+                        "provide medical recommendations. Make sure the average user will be able to understand the report."
+                    ),
                 }
-            ],
-            temperature=0.0,
-        )
-    else:  # no user description given
-        response = client.chat.completions.create(
-            model="gpt-4.1",
-            messages=[
-                {
-                    "role": "user",
-                    "content": [
-                        {"type": "text", "text": "You are a dermatologist that assesses skin conditions, including inflammatory, autoimmune and connective tissue, neoplastic, pigmentary, infectious, genetic and congenital, drug-induced and trauma and scarring disorders."},
-                        {
-                            "type": "text",
-                            "text": (
-                                "Within 1000 characters with the title being WTR Report, analyse the image and "
-                                "create a report to highlight what condition it most likely is, and in bullet points, "
-                                "provide medical recommendations. Make sure the average user will be able to understand the report."
-                            ),
-                        },
-                        {
-                            "type": "image_url",
-                            "image_url": {
-                                "url": f"data:image/jpeg;base64,{base64_image}",
-                                "detail": "low",
-                            },
-                        },
-                    ],
-                }
-            ],
-            temperature=0.0,
-        )
+            ]
+        }
+    ]
 
-    # Prints as markdown
+    if descList:
+        common_prompt[0]["content"].append({"type": "text", "text": ','.join(descList)})
+
+    common_prompt[0]["content"].append({
+        "type": "image_url",
+        "image_url": {
+            "url": f"data:image/jpeg;base64,{base64_image}",
+            "detail": "low"
+        }
+    })
+
+    response = client.chat.completions.create(
+        model="gpt-4.1",
+        messages=common_prompt,
+        temperature=0.0,
+    )
+
     st.markdown(response.choices[0].message.content)
 
-# Container with options to download and send report
+# PDF Report Generator
 with st.container():
     st.write("Download report with uploaded image and suggested diagnosis as saved PDF.")
 
     if st.button(label="Generate Report", type="primary", icon="📄") and skinCondition:
         try:
             image = Image.open(skinCondition).convert("RGB")
-
             pdf_bytes = io.BytesIO()
             c = canvas.Canvas(pdf_bytes, pagesize=letter)
 
-            # Title
             c.setFont("Helvetica-Bold", 16)
             c.drawString(50, 770, "Skin Condition Report")
 
-            # Uploaded Image
             c.setFont("Helvetica", 12)
             c.drawString(50, 750, "Uploaded Image:")
             image_reader = ImageReader(image)
             c.drawImage(image_reader, 50, 500, width=300, height=200, preserveAspectRatio=True)
 
-            # Self-described symptoms
             c.drawString(50, 470, "Self-Described Symptoms:")
             y = 450
             for sym in descList:
                 c.drawString(60, y, f"- {sym}")
-                y -= 15  # space between lines
+                y -= 15
 
-            # Suggested Diagnosis Section
             c.drawString(50, y - 20, "Suggested Diagnosis and Treatment:")
             y -= 40
 
@@ -217,22 +181,20 @@ with st.container():
             for paragraph in response_text:
                 if paragraph.strip():
                     y = render_markdown_to_pdf(c, paragraph.strip(), 60, y, max_width=480)
-                    y -= 10  # spacing between paragraphs
+                    y -= 10
                     if y < 60:
                         c.showPage()
                         y = 750
 
-            # Save PDF
             c.save()
             pdf_bytes.seek(0)
             st.success("PDF generated successfully!")
 
-            # Download button
             st.download_button(
                 label="Download",
                 type="primary",
                 icon="💾",
-                data=pdf_bytes, 
+                data=pdf_bytes,
                 file_name="WTR Report.pdf",
                 mime="application/pdf",
             )
@@ -244,9 +206,12 @@ with st.container():
         "Send Gmail",
         type="primary",
         icon="📩",
-        url="https://mail.google.com/mail/?view=cm&fs=1&to=&su=Concerns%20About%20My%20Health&body=Please%20find%20the%20PDF%20document%20attached.%0A%0A%28You%20can%20manually%20attach%20the%20PDF%29%0A%0ABest%20Regards,",
+        url="https://mail.google.com/mail/?view=cm&fs=1&to=&su=Concerns%20About%20My%20Health&body=Please%20find%20the%20PDF%20document%20attached.%0A%0A%28You%20can%20manually%20attach%20the%20PDF%29%0A%0ABest%20Regards,"
     )
 
 # Disclaimer
 st.markdown("**Disclaimer**")
-st.markdown('<div style="text-align: justify;">The content provided on this platform is for informational and educational purposes only and is not intended as a substitute for professional medical advice, diagnosis, or treatment. Always seek the advice of your physician or other qualified health provider with any questions you may have regarding a medical condition. Never disregard professional medical advice or delay in seeking it because of something you have read here. If you think you may have a medical emergency, call your doctor or emergency services immediately. Reliance on any information provided by this platform is solely at your own risk.</div>', unsafe_allow_html=True)
+st.markdown(
+    '<div style="text-align: justify;">The content provided on this platform is for informational and educational purposes only and is not intended as a substitute for professional medical advice, diagnosis, or treatment. Always seek the advice of your physician or other qualified health provider with any questions you may have regarding a medical condition. Never disregard professional medical advice or delay in seeking it because of something you have read here. If you think you may have a medical emergency, call your doctor or emergency services immediately. Reliance on any information provided by this platform is solely at your own risk.</div>',
+    unsafe_allow_html=True
+)

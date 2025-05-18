@@ -75,7 +75,6 @@ def render_markdown_to_pdf(c, text, x, y, max_width=450, line_height=16):
 def encode_image(image):
     return base64.b64encode(image.read()).decode("utf-8")
 
-
 # Main UI container
 with stylable_container(
     key="wrapper_container",
@@ -122,7 +121,7 @@ if skinCondition:
                 {
                     "type": "text",
                     "text": (
-                        "Within 1000 characters with the title being WTR Report, analyse the image and "
+                        "Within 2000 characters with the title being WTR Report, analyse the image and "
                         "create a report to highlight what condition it most likely is, and in bullet points, "
                         "provide medical recommendations. Make sure the average user will be able to understand the report."
                     ),
@@ -212,6 +211,12 @@ with st.container():
 # Disclaimer
 st.markdown("**Disclaimer**")
 st.markdown(
-    '<div style="text-align: justify;">The content provided on this platform is for informational and educational purposes only and is not intended as a substitute for professional medical advice, diagnosis, or treatment. Always seek the advice of your physician or other qualified health provider with any questions you may have regarding a medical condition. Never disregard professional medical advice or delay in seeking it because of something you have read here. If you think you may have a medical emergency, call your doctor or emergency services immediately. Reliance on any information provided by this platform is solely at your own risk.</div>',
+    '<div style="text-align: justify;">'
+    'The content provided on this platform is for informational and educational purposes only and is not intended as a substitute for professional medical advice, diagnosis, or treatment. '
+    'Always seek the advice of your physician or other qualified health provider with any questions you may have regarding a medical condition. '
+    'Never disregard professional medical advice or delay in seeking it because of something you have read here. '
+    'If you think you may have a medical emergency, call your doctor or emergency services immediately. '
+    'Reliance on any information provided by this platform is solely at your own risk.'
+    '</div>',
     unsafe_allow_html=True
 )

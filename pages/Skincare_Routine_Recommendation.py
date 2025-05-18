@@ -101,7 +101,7 @@ with stylable_container(
 
     concernList = st.multiselect(
         "What are your concerns?",
-        ["Acne", "Dry Skin", "Blemish Scars", "Wrinkles", "Black Heads", "Oily Skin", "Acne Scar"]
+        ["Acne", "Dry Skin", "Uneven Skin Texture", "Blemish Scars", "Hyperpigmentation", "Wrinkles", "Blackheads", "Oily Skin", "Acne Scar"]
     )
 
     if st.button(label="Submit", type="primary",icon="✅"):
@@ -109,13 +109,17 @@ with stylable_container(
         if concernList:
             concerns = ', '.join(concernList)
             prompt = f"Given someone with {skintype} skin who wants to primarily fix {concerns}. " \
-                     f"Within 1000 characters with the title being Skincare Routine, " \
+                     f"Within 2000 characters with the title being Skincare Routine, " \
                      f"provide recommendations for a routine and products in bullet points. " \
+                     f"State the step name, frequency and purpose of step. " \
+                     f"Finally, provide Amazon shopping search results, where the hyperlink is the product's name, to the products mentioned."\
                      f"Make sure the average user will be able to understand the report."
         else:
             prompt = f"Given someone with {skintype} skin. " \
-                     f"Within 1000 characters with the title being Skincare Routine, " \
+                     f"Within 2000 characters with the title being Skincare Routine, " \
                      f"provide recommendations for a routine and products in bullet points. " \
+                     f"State the step name, frequency and purpose of step. " \
+                     f"Finally, provide Amazon shopping search results, where the hyperlink is the product's name, to the products mentioned."\
                      f"Make sure the average user will be able to understand the report."
 
         st.session_state.response = client.chat.completions.create(
@@ -164,6 +168,8 @@ if st.session_state.submitted:
 
                 st.download_button(
                     label="Download",
+                    type="primary",
+                    icon="💾",
                     data=pdf_bytes,
                     file_name="report.pdf",
                     mime="application/pdf",

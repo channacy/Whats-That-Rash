@@ -18,7 +18,7 @@ load_dotenv()
 client = OpenAI(api_key=os.getenv("GPTKEY"))
 
 # Set Page's Title and Icon
-st.set_page_config(page_title="What's That Rash?", page_icon="images/logo.png")
+st.set_page_config(page_title="Skincare recommendation", page_icon="images/logo.png")
 
 # Functions
 def render_markdown_to_pdf(c, text, x, y, max_width=450, line_height=16):
@@ -88,162 +88,112 @@ with stylable_container(
     """,
 ):
     # Header for website
-    st.title("WHAT'S THAT RASH?")
-    st.write("Concerned? Let's find out what is that rash is")
+    st.title("Skincare recommendation")
+    st.write("Find the right routine for you")
 
     # Tag selection for rash description
-    descList = st.multiselect(
-        "What is your rash like?",
+    skintype = st.selectbox(
+        "What is your skin type?",
         [
-            "Bumpy", "Rough", "Dry", "Scaly", "Flaky", "Crusty", "Scabbed",
-            "Red", "White", "Darkened", "Discolored", "Bruised",
-            "Clustered", "Spread", "Localized",
-            "Blistered", "Oozing", "Swollen", "Raised", "Indented",
-            "Painful", "Itchy", "Burning", "Tingling", "Tender", "Warm", "Hot", "Numb"
+            "normal", "dry", "oily", "combination"
         ],
-        None,
     )
+    concernList = st.multiselect("What are your concerns?", ["acne", "dry skin", "blemish scars", "wrinkles", "black heads", "oily skin", "acne scar"])
 
-
-def encode_image(image):
-    return base64.b64encode(image.read()).decode("utf-8")
-
-
-# Get an image from user
-skinCondition = st.file_uploader("Upload a Picture of Your Skin Condition", type=["jpg", "jpeg", "png"])
-
-# GPT Integration
-if skinCondition:
-    st.image(skinCondition, caption="Uploaded image", use_container_width=True)
-    base64_image = encode_image(skinCondition)
-
-    # Only include description list in prompt if user provided any
-    if descList and len(descList) > 0:
-        desc = ','.join(descList)
-        response = client.chat.completions.create(
-            model="gpt-4.1",
-            messages=[
-                {
-                    "role": "user",
-                    "content": [
-                        {"type": "text", "text": "You are a dermatologist that assesses skin conditions"},
-                        {
-                            "type": "text",
-                            "text": (
-                                "Within 1000 characters with the title being WTR Report, analyse the image and "
-                                "create a report to highlight what condition it most likely is, and in bullet points, "
-                                "provide medical recommendations. Make sure the average user will be able to understand the report."
-                            ),
-                        },
-                        {"type": "text", "text": desc},
-                        {
-                            "type": "image_url",
-                            "image_url": {
-                                "url": f"data:image/jpeg;base64,{base64_image}",
-                                "detail": "low",
-                            },
-                        },
-                    ],
-                }
-            ],
-            temperature=0.0,
-        )
-    else:  # no user description given
-        response = client.chat.completions.create(
-            model="gpt-4.1",
-            messages=[
-                {
-                    "role": "user",
-                    "content": [
-                        {"type": "text", "text": "You are a dermatologist that assesses skin conditions"},
-                        {
-                            "type": "text",
-                            "text": (
-                                "Within 1000 characters with the title being WTR Report, analyse the image and "
-                                "create a report to highlight what condition it most likely is, and in bullet points, "
-                                "provide medical recommendations. Make sure the average user will be able to understand the report."
-                            ),
-                        },
-                        {
-                            "type": "image_url",
-                            "image_url": {
-                                "url": f"data:image/jpeg;base64,{base64_image}",
-                                "detail": "low",
-                            },
-                        },
-                    ],
-                }
-            ],
-            temperature=0.0,
-        )
-
-    # Prints as markdown
-    st.markdown(response.choices[0].message.content)
-
-# Container with options to download and send report
-with st.container():
-    st.write("Download report with uploaded image and suggested diagnosis as saved PDF.")
-
-    if st.button(label="Generate Report") and skinCondition:
-        try:
-            image = Image.open(skinCondition).convert("RGB")
-
-            pdf_bytes = io.BytesIO()
-            c = canvas.Canvas(pdf_bytes, pagesize=letter)
-
-            # Title
-            c.setFont("Helvetica-Bold", 16)
-            c.drawString(50, 770, "Skin Condition Report")
-
-            # Uploaded Image
-            c.setFont("Helvetica", 12)
-            c.drawString(50, 750, "Uploaded Image:")
-            image_reader = ImageReader(image)
-            c.drawImage(image_reader, 50, 500, width=300, height=200, preserveAspectRatio=True)
-
-            # Self-described symptoms
-            c.drawString(50, 470, "Self-Described Symptoms:")
-            y = 450
-            for sym in descList:
-                c.drawString(60, y, f"- {sym}")
-                y -= 15  # space between lines
-
-            # Suggested Diagnosis Section
-            c.drawString(50, y - 20, "Suggested Diagnosis and Treatment:")
-            y -= 40
-
-            response_text = response.choices[0].message.content.strip().split("\n")
-            for paragraph in response_text:
-                if paragraph.strip():
-                    y = render_markdown_to_pdf(c, paragraph.strip(), 60, y, max_width=480)
-                    y -= 10  # spacing between paragraphs
-                    if y < 60:
-                        c.showPage()
-                        y = 750
-
-            # Save PDF
-            c.save()
-            pdf_bytes.seek(0)
-            st.success("PDF generated successfully!")
-
-            # Download button
-            st.download_button(
-                label="Download",
-                data=pdf_bytes,
-                file_name="report.pdf",
-                mime="application/pdf",
+    # GPT Integration
+    submitted = False
+    if st.button("Submit"):
+        submitted = True
+        # Only include description list in prompt if user provided any
+        if concernList and len(concernList) > 0:
+            concerns = ','.join(concernList)
+            response = client.chat.completions.create(
+                model="gpt-4.1",
+                messages=[
+                    {
+                        "role": "user",
+                        "content": [
+                            {"type": "text", "text": "Given someone with " + skintype + "skin who wants to primarily fix " + concerns +
+                            ". Within 1000 characters with the title being Skincare Routine, "
+                                "provide recommendations for a routine and products in bullet points. "
+                                "Make sure the average user will be able to understand the report."},
+                        ],
+                    }
+                ],
+                temperature=0.0,
+            )
+        else:  # no user description given
+            response = client.chat.completions.create(
+                model="gpt-4.1",
+                messages=[
+                    {
+                        "role": "user",
+                        "content": [
+                            {"type": "text", "text": "Given someone with " + skintype + "skin." +
+                            "Within 1000 characters with the title being Skincare Routine, "
+                                "provide recommendations for a routine and products in bullet points. "
+                                "Make sure the average user will be able to understand the report."},
+                        ],
+                    }
+                ],
+                temperature=0.0,
             )
 
-        except Exception as e:
-            st.error(f"Error generating PDF: {e}")
+        # Prints as markdown
+        st.markdown(response.choices[0].message.content)
 
-    st.link_button(
-        "Send Gmail",
-        url="https://mail.google.com/mail/?view=cm&fs=1&to=&su=Concerns%20About%20My%20Health&body=Please%20find%20the%20PDF%20document%20attached.%0A%0A%28You%20can%20manually%20attach%20the%20PDF%29%0A%0ABest%20Regards,",
+# Container with options to download and send report
+if submitted:
+    with st.container():
+        st.write("Download routine as saved PDF.")
+
+        if st.button(label="Generate Report"):
+            try:
+                pdf_bytes = io.BytesIO()
+                c = canvas.Canvas(pdf_bytes, pagesize=letter)
+
+                # Title
+                c.setFont("Helvetica-Bold", 16)
+                c.drawString(50, 770, "Skincare Routine")
+
+                # Self-described symptoms
+                c.drawString(50, 470, "Concerns:")
+                y = 450
+                for sym in concernList:
+                    c.drawString(60, y, f"- {sym}")
+                    y -= 15  # space between lines
+
+                # Suggested Diagnosis Section
+                c.drawString(50, y - 20, "Suggested Routine:")
+                y -= 40
+
+                response_text = response.choices[0].message.content.strip().split("\n")
+                for paragraph in response_text:
+                    if paragraph.strip():
+                        y = render_markdown_to_pdf(c, paragraph.strip(), 60, y, max_width=480)
+                        y -= 10  # spacing between paragraphs
+                        if y < 60:
+                            c.showPage()
+                            y = 750
+
+                # Save PDF
+                c.save()
+                pdf_bytes.seek(0)
+                st.success("PDF generated successfully!")
+
+                # Download button
+                st.download_button(
+                    label="Download",
+                    data=pdf_bytes,
+                    file_name="report.pdf",
+                    mime="application/pdf",
+                )
+
+            except Exception as e:
+                st.error(f"Error generating PDF: {e}")
+
+    # Disclaimer
+    st.markdown("**Disclaimer**")
+    st.text(
+        "Any content available via this website is for general informational purposes only and is not intended to be, and should not be treated as, substitute for professional medical advice, diagnosis or treatment. The content is provided on the understanding that no surgical or medical advice or recommendation is being rendered to you via the website. Medical treatment has to be individualised and can only be rendered after adequate assessment of your condition through appropriate clinical examination. Please do not disregard the professional medical advice of your physician or local healthcare provider or delay in seeking medical advice from them because of any information provided on the website."
     )
-
-# Disclaimer
-st.markdown("**Disclaimer**")
-st.text(
-    "Any content available via this website is for general informational purposes only and is not intended to be, and should not be treated as, substitute for professional medical advice, diagnosis or treatment. The content is provided on the understanding that no surgical or medical advice or recommendation is being rendered to you via the website. Medical treatment has to be individualised and can only be rendered after adequate assessment of your condition through appropriate clinical examination. Please do not disregard the professional medical advice of your physician or local healthcare provider or delay in seeking medical advice from them because of any information provided on the website."
-)

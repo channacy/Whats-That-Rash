@@ -6,9 +6,9 @@ https://github.com/user-attachments/assets/ede36ae2-89dc-4b7d-9110-bcce2ea2f6af
 
 # Features
 
-With our web app, simply upload an image of your condition (Rash, bumps, bruises), include tags describing what the skin condition is like, and our AI dermatologist will determine what the skin condition most likely is.
+With our web app, simply upload an image of your condition (Rash, bumps, bruises), include tags describing what the skin condition is like, and our AI dermatologist will determine what the skin condition most likely is. Afterwards, an option to generate a PDF of the report and email it to your doctor will be available.
 
-Afterwards, an option to generate a PDF of the report and email it to your doctor will be available.
+Furthermore, we added the option to provide skincare routine treatments based on skin type and noted concerns.
 
-# Frameworks and API
-Utilised the Streamlit framework and OpenAI's Vision API 
+# Tools, Frameworks and API
+Utilised the Streamlit framework and OpenAI's GPT-4 Vision API

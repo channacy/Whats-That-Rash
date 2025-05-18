@@ -90,7 +90,7 @@ with stylable_container(
     # Header for website
     st.logo("images/logo.png", size ="large")
     st.title("What's That Rash?", anchor=False)
-    st.write("Concerned? Let's find ut what is that rash is")
+    st.write("Concerned? Let's find out what is that rash is")
 
     # Tag selection for rash description
     descList = st.multiselect(

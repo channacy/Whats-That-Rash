@@ -142,11 +142,18 @@ if skinCondition:
     })
 
     response = client.chat.completions.create(
-        model="gpt-4.1",
+        model="ft:gpt-4o-2024-08-06:channacy::BYifiu0c",
         messages=common_prompt,
         temperature=0.0,
     )
 
+    if response.choices[0].message.content == "I'm sorry, I can't assist with that." or response.choices[0].message.content == "I'm unable to analyze images or provide specific medical diagnoses. However, I can offer general information. If you suspect a skin condition, it's important to consult a healthcare professional for an accurate diagnosis and treatment plan.":
+        response = client.chat.completions.create(
+        model="gpt-4.1",
+        messages=common_prompt,
+        temperature=0.0,
+    )
+        
     st.markdown(response.choices[0].message.content)
 
 # PDF Report Generator

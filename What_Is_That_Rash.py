@@ -147,7 +147,7 @@ if skinCondition:
         temperature=0.0,
     )
 
-    if response.choices[0].message.content == "I'm sorry, I can't assist with that." or response.choices[0].message.content == "I'm unable to analyze images or provide specific medical diagnoses. However, I can offer general information. If you suspect a skin condition, it's important to consult a healthcare professional for an accurate diagnosis and treatment plan.":
+    if response.choices[0].message.content == "I'm sorry, I can't assist with that." or "I'm unable to analyze images or provide specific medical diagnoses" in response.choices[0].message.content:
         response = client.chat.completions.create(
         model="gpt-4.1",
         messages=common_prompt,

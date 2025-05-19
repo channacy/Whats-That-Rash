@@ -1,5 +1,5 @@
 cython==3.1.0             # required for jnius
-protobuf==5.26.1          # downgrade to avoid conflict with streamlit-extras
+protobuf==5.27.3          # downgrade to avoid conflict with streamlit-extras
 attr==0.3.2
 colorama==0.4.6
 ConfigParser==7.2.0
@@ -21,4 +21,3 @@ streamlit==1.45.1
 streamlit_extras==0.7.1
 thread==2.0.5
 urllib3_secure_extra==0.1.0
-jnius==1.1.0

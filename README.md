@@ -1,5 +1,7 @@
 # 🔍 What's That Rash?
 
+Link: https://what-is-that-rash.streamlit.app/
+
 We have developed an AI web app, "What's That Rash?" to help patients with skin conditions find out more about their skin condition with just a picture.
 
 https://github.com/user-attachments/assets/ede36ae2-89dc-4b7d-9110-bcce2ea2f6af

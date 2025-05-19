@@ -2,9 +2,11 @@
 
 Link: https://what-is-that-rash.streamlit.app/
 
-We have developed an AI web app, "What's That Rash?" to help patients with skin conditions find out more about their skin condition with just a picture.
+**What's That Rash?** is a web app that helps users identify skin conditions with just a photo. Users upload an image of their skin issue (such as a rash, bump, or bruise) and add descriptive tags. Our AI dermatologist analyzes the input and provides a likely diagnosis. Users can then generate a professional PDF report and email it directly to a doctor.
 
-https://github.com/user-attachments/assets/ede36ae2-89dc-4b7d-9110-bcce2ea2f6af
+Additionally, the app offers personalized skincare routines based on the user’s skin type and concerns, with a link to product recommendations, blending medical insight with daily care.
+
+[https://github.com/user-attachments/assets/ede36ae2-89dc-4b7d-9110-bcce2ea2f6af](https://youtu.be/XO5nkgP3v7c)
 
 # Features
 
@@ -13,4 +15,4 @@ With our web app, simply upload an image of your condition (Rash, bumps, bruises
 Furthermore, we added the option to provide 🧴 skincare routine treatments based on skin type and noted concerns.
 
 # Tools, Frameworks and API
-Utilised the Streamlit framework and OpenAI's GPT-4 Vision API
+We used the Streamlit framework for rapid prototyping and OpenAI’s GPT-4 Vision API for image interpretation. To improve medical accuracy, we reinforced the system using a curated Skin Disease Classification dataset and fine-tuned it for dermatological relevance.

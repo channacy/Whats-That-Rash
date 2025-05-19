@@ -1,4 +1,5 @@
-cython==3.1.0
+cython==3.1.0             # required for jnius
+protobuf==5.26.1          # downgrade to avoid conflict with streamlit-extras
 attr==0.3.2
 colorama==0.4.6
 ConfigParser==7.2.0
@@ -11,7 +12,6 @@ ipywidgets==8.1.7
 keyring==25.6.0
 openai==1.79.0
 Pillow==11.2.1
-protobuf==6.31.0
 pyOpenSSL==25.1.0
 python-dotenv==1.1.0
 redis==6.1.0
@@ -21,5 +21,4 @@ streamlit==1.45.1
 streamlit_extras==0.7.1
 thread==2.0.5
 urllib3_secure_extra==0.1.0
-reportlab==4.4.1 
 jnius==1.1.0

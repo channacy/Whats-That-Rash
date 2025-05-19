@@ -7,6 +7,7 @@ Link: https://what-is-that-rash.streamlit.app/
 Additionally, the app offers personalized skincare routines based on the user’s skin type and concerns, with a link to product recommendations, blending medical insight with daily care.
 
 **Demo:**
+
 [![Watch the video](https://img.youtube.com/vi/XO5nkgP3v7c/0.jpg)](https://www.youtube.com/watch?v=XO5nkgP3v7c)
 
 # Features
